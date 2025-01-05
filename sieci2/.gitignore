@@ -1,0 +1,21 @@
+# Ignoruj środowisko wirtualne Python
+venv/
+
+# Ignoruj cache Pythona
+__pycache__/
+*.py[cod]
+
+# Ignoruj pliki historii i logów
+*.log
+
+# Ignoruj pliki tworzone przez system operacyjny
+.DS_Store
+Thumbs.db
+
+# Ignoruj pliki tymczasowe edytorów
+*.swp
+*.swo
+*.tmp
+*.bak
+
+
