@@ -1,0 +1,1 @@
+# SieciNeuronowe_projekt2
