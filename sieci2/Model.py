@@ -1,6 +1,7 @@
 import json
 import os
 import tensorflow as tf
+from keras.src.metrics import Precision, Recall, AUC
 from keras.src.optimizers import SGD
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -112,7 +113,7 @@ class Model:
         self.model.compile(
             optimizer=optimizer,
             loss='categorical_crossentropy',
-            metrics=['accuracy', 'mse'])
+            metrics=['accuracy', 'mse', Precision(), Recall(), AUC()])
 
         # Podsumowanie modelu
         self.model.summary()

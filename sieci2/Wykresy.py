@@ -37,7 +37,7 @@ def plot_training_history(history, title="Model Training History", filename_pref
     plt.legend()
     accuracy_plot_path = os.path.join(folder, f'{filename_prefix}_accuracy.png')
     plt.savefig(accuracy_plot_path)  # Zapis wykresu jako plik PNG w folderze
-    plt.show()
+    # plt.show()
 
     # Wykres strat (loss)
     plt.figure()
@@ -50,7 +50,7 @@ def plot_training_history(history, title="Model Training History", filename_pref
     plt.legend()
     loss_plot_path = os.path.join(folder, f'{filename_prefix}_loss.png')
     plt.savefig(loss_plot_path)  # Zapis wykresu jako plik PNG w folderze
-    plt.show()
+    # plt.show()
 
     # Wykres MSE (jeśli istnieje)
     if mse is not None:
@@ -64,10 +64,97 @@ def plot_training_history(history, title="Model Training History", filename_pref
         plt.legend()
         mse_plot_path = os.path.join(folder, f'{filename_prefix}_mse.png')
         plt.savefig(mse_plot_path)  # Zapis wykresu jako plik PNG w folderze
-        plt.show()
+        # plt.show()
 
     print(f"All plots saved in '{folder}' folder.")
 
+
+def plot_additional_training_history(history, title="Model Training History", filename_prefix="", folder="plots"):
+    """
+    Rysowanie wykresów strat, dokładności i MSE oraz zapisywanie ich jako pliki w określonym folderze.
+    """
+    # Sprawdzamy, czy folder istnieje, jeśli nie to go tworzymy
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    # Sprawdzamy, czy self.history to obiekt z atrybutem history
+    if hasattr(history, 'history'):
+        history = history.history
+
+    f1 = history['f1_score']
+    val_f1 = history['val_f1_score']
+    precision = history['precision']
+    val_precision = history['val_precision']
+    auc_roc = history['auc_roc']
+    val_auc_roc = history['val_auc_roc']
+    lr = history['lr']
+    batch_size = history['batch_size']
+
+    epochs = range(1, len(f1) + 1)
+
+    # Wykres f1-score
+    plt.figure()
+    plt.plot(epochs, f1, label='Training F1-score', color='blue')
+    plt.plot(epochs, val_f1, label='Validation F1-score', color='red')
+    plt.title('Training and Validation F1-score')
+    plt.xlabel('Epochs')
+    plt.ylabel('F1-score')
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.legend()
+    accuracy_plot_path = os.path.join(folder, f'{filename_prefix}_f1.png')
+    plt.savefig(accuracy_plot_path)  # Zapis wykresu jako plik PNG w folderze
+    # plt.show()
+
+    # Wykres precision
+    plt.figure()
+    plt.plot(epochs, precision, label='Training Precision', color='blue')
+    plt.plot(epochs, val_precision, label='Validation Precision', color='red')
+    plt.title('Training and Validation Precision')
+    plt.xlabel('Epochs')
+    plt.ylabel('Precision')
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.legend()
+    loss_plot_path = os.path.join(folder, f'{filename_prefix}_precision.png')
+    plt.savefig(loss_plot_path)  # Zapis wykresu jako plik PNG w folderze
+    # plt.show()
+
+    # Wykres auc_roc
+    plt.figure()
+    plt.plot(epochs, auc_roc, label='Training AUC-ROC', color='blue')
+    plt.plot(epochs, val_auc_roc, label='Validation AUC-ROC', color='red')
+    plt.title('Training and Validation AUC-ROC')
+    plt.xlabel('Epochs')
+    plt.ylabel('AUC-ROC')
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.legend()
+    mse_plot_path = os.path.join(folder, f'{filename_prefix}_auc_roc.png')
+    plt.savefig(mse_plot_path)  # Zapis wykresu jako plik PNG w folderze
+    # plt.show()
+
+    # Wykres lr
+    plt.figure()
+    plt.plot(epochs, lr, color='blue')
+    plt.title('Learning rate')
+    plt.xlabel('Epochs')
+    plt.ylabel('lr')
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.legend()
+    mse_plot_path = os.path.join(folder, f'{filename_prefix}_lr.png')
+    plt.savefig(mse_plot_path)  # Zapis wykresu jako plik PNG w folderze
+    # plt.show()
+
+    # Wykres batch_size
+    plt.figure()
+    plt.plot(epochs, lr, color='blue')
+    plt.title('Batch size')
+    plt.xlabel('Epochs')
+    plt.ylabel('Batch size')
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.legend()
+    mse_plot_path = os.path.join(folder, f'{filename_prefix}_batch_size.png')
+    plt.savefig(mse_plot_path)  # Zapis wykresu jako plik PNG w folderze
+    # plt.show()
+    print(f"All plots saved in '{folder}' folder.")
 
 
 def save_all_metrics(y_true, y_pred, y_pred_prob, folder="metrics", filename="all_metrics.txt"):

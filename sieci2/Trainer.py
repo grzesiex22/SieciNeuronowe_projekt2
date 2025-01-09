@@ -12,8 +12,15 @@ class Trainer:
         self.increase_epoch = increase_epoch
         self.increase_factor = increase_factor
         self.max_batch_size = max_batch_size
-        self.global_history = {'loss': [], 'val_loss': [], 'accuracy': [], 'val_accuracy': [], 'mse': [], 'val_mse': [],
-                               'batch_size': [], 'lr': []}
+        self.global_history = {
+            'loss': [], 'val_loss': [],
+            'accuracy': [], 'val_accuracy': [],
+            'mse': [], 'val_mse': [],
+            'f1_score': [], 'val_f1_score': [],
+            'precision': [], 'val_precision': [],
+            'auc_roc': [], 'val_auc_roc': [],
+            'batch_size': [], 'lr': [],
+        }
 
         # Early stopping parameters
         self.early_stopping_patience = 3
