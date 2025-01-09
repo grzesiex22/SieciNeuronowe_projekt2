@@ -1,10 +1,11 @@
 import math
 import numpy as np
+from WeightTracker import WeightTracker
 
 
 class Trainer:
     def __init__(self, model, train_data, val_data, initial_batch_size, increase_epoch, increase_factor,
-                 max_batch_size):
+                 max_batch_size, layer_names):
         self.model = model
         self.train_data = train_data
         self.val_data = val_data
@@ -16,11 +17,14 @@ class Trainer:
             'loss': [], 'val_loss': [],
             'accuracy': [], 'val_accuracy': [],
             'mse': [], 'val_mse': [],
-            'f1_score': [], 'val_f1_score': [],
+            'recall': [], 'val_recall': [],
             'precision': [], 'val_precision': [],
-            'auc_roc': [], 'val_auc_roc': [],
+            'auc': [], 'val_auc': [],
+            'f1_score': [], 'val_f1_score': [],
             'batch_size': [], 'lr': [],
         }
+        self.weight_tracker = None
+        self.layer_names = layer_names
 
         # Early stopping parameters
         self.early_stopping_patience = 3
@@ -51,6 +55,9 @@ class Trainer:
             steps_per_epoch = math.floor(self.train_data.samples / batch_size)
             validation_steps = math.floor(self.val_data.samples / batch_size)
 
+            # Dodanie callbacku podczas treningu
+            self.weight_tracker = WeightTracker(layer_names=self.layer_names)
+
             # Train one epoch at a time
             for epoch in range(self.increase_epoch):
                 if current_epoch >= epochs:
@@ -69,12 +76,29 @@ class Trainer:
                     steps_per_epoch=steps_per_epoch,
                     validation_data=self.val_data,
                     validation_steps=validation_steps,
-                    verbose=1
+                    verbose=1,
+                    callbacks=[self.weight_tracker]
                 )
 
                 # Update global history
                 for key in self.global_history.keys():
                     self.global_history[key].extend(history.history.get(key, []))
+                # print(f'global history = {history.history}')
+
+                # Obliczanie F1-score na podstawie Precision i Recall
+                precision = history.history['precision'][-1]  # Lista wartości precyzji z historii treningu
+                recall = history.history['recall'][-1]  # Lista wartości czułości z historii treningu
+                f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+                # Obliczanie F1-score dla każdej epoki
+                self.global_history['f1_score'].append(f1_score)
+
+                # Obliczanie val_F1-score na podstawie Precision i Recall
+                val_precision = history.history['val_precision'][-1]  # Lista wartości precyzji z historii treningu
+                val_recall = history.history['val_recall'][-1]  # Lista wartości czułości z historii treningu
+                val_f1_score = 2 * (val_precision * val_recall) / (val_precision + val_recall) \
+                    if (val_precision + val_recall) > 0 else 0
+                # Obliczanie val_F1-score dla każdej epoki
+                self.global_history['val_f1_score'].append(val_f1_score)
 
                 # Add batch_size and learning_rate to global_history for this epoch
                 self.global_history['batch_size'].append(batch_size)
@@ -129,4 +153,4 @@ class Trainer:
                     batch_size = self.max_batch_size
 
         print("\nTraining complete.")
-        return self.global_history
+        return self.global_history, self.weight_tracker.weights_history

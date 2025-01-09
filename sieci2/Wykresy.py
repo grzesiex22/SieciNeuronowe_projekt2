@@ -28,8 +28,8 @@ def plot_training_history(history, title="Model Training History", filename_pref
 
     # Wykres dokładności
     plt.figure()
-    plt.plot(epochs, acc, label='Training Accuracy', color='blue')
-    plt.plot(epochs, val_acc, label='Validation Accuracy', color='red')
+    plt.plot(epochs, acc, label='Training Accuracy', marker='o', color='blue')
+    plt.plot(epochs, val_acc, label='Validation Accuracy', marker='o', color='red')
     plt.title('Training and Validation Accuracy')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
@@ -41,8 +41,8 @@ def plot_training_history(history, title="Model Training History", filename_pref
 
     # Wykres strat (loss)
     plt.figure()
-    plt.plot(epochs, loss, label='Training Loss', color='blue')
-    plt.plot(epochs, val_loss, label='Validation Loss', color='red')
+    plt.plot(epochs, loss, label='Training Loss', marker='o', color='blue')
+    plt.plot(epochs, val_loss, label='Validation Loss', marker='o', color='red')
     plt.title('Training and Validation Loss')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
@@ -55,8 +55,8 @@ def plot_training_history(history, title="Model Training History", filename_pref
     # Wykres MSE (jeśli istnieje)
     if mse is not None:
         plt.figure()
-        plt.plot(epochs, mse, label='Training MSE', color='blue')
-        plt.plot(epochs, val_mse, label='Validation MSE', color='red')
+        plt.plot(epochs, mse, label='Training MSE', marker='o', color='blue')
+        plt.plot(epochs, val_mse, label='Validation MSE', marker='o', color='red')
         plt.title('Training and Validation MSE')
         plt.xlabel('Epochs')
         plt.ylabel('Mean Squared Error')
@@ -83,10 +83,12 @@ def plot_additional_training_history(history, title="Model Training History", fi
 
     f1 = history['f1_score']
     val_f1 = history['val_f1_score']
+    recall = history['recall']
+    val_recall = history['val_recall']
     precision = history['precision']
     val_precision = history['val_precision']
-    auc_roc = history['auc_roc']
-    val_auc_roc = history['val_auc_roc']
+    auc_roc = history['auc']
+    val_auc_roc = history['val_auc']
     lr = history['lr']
     batch_size = history['batch_size']
 
@@ -94,8 +96,8 @@ def plot_additional_training_history(history, title="Model Training History", fi
 
     # Wykres f1-score
     plt.figure()
-    plt.plot(epochs, f1, label='Training F1-score', color='blue')
-    plt.plot(epochs, val_f1, label='Validation F1-score', color='red')
+    plt.plot(epochs, f1, label='Training F1-score', marker='o', color='blue')
+    plt.plot(epochs, val_f1, label='Validation F1-score', marker='o', color='red')
     plt.title('Training and Validation F1-score')
     plt.xlabel('Epochs')
     plt.ylabel('F1-score')
@@ -105,10 +107,23 @@ def plot_additional_training_history(history, title="Model Training History", fi
     plt.savefig(accuracy_plot_path)  # Zapis wykresu jako plik PNG w folderze
     # plt.show()
 
+    # Wykres recall
+    plt.figure()
+    plt.plot(epochs, recall, label='Training Recall', marker='o', color='blue')
+    plt.plot(epochs, val_recall, label='Validation Recall', marker='o', color='red')
+    plt.title('Training and Validation Recall')
+    plt.xlabel('Epochs')
+    plt.ylabel('Recall')
+    plt.grid(True, linestyle='--', alpha=0.7)
+    plt.legend()
+    accuracy_plot_path = os.path.join(folder, f'{filename_prefix}_recall.png')
+    plt.savefig(accuracy_plot_path)  # Zapis wykresu jako plik PNG w folderze
+    # plt.show()
+
     # Wykres precision
     plt.figure()
-    plt.plot(epochs, precision, label='Training Precision', color='blue')
-    plt.plot(epochs, val_precision, label='Validation Precision', color='red')
+    plt.plot(epochs, precision, label='Training Precision', marker='o', color='blue')
+    plt.plot(epochs, val_precision, label='Validation Precision', marker='o', color='red')
     plt.title('Training and Validation Precision')
     plt.xlabel('Epochs')
     plt.ylabel('Precision')
@@ -120,8 +135,8 @@ def plot_additional_training_history(history, title="Model Training History", fi
 
     # Wykres auc_roc
     plt.figure()
-    plt.plot(epochs, auc_roc, label='Training AUC-ROC', color='blue')
-    plt.plot(epochs, val_auc_roc, label='Validation AUC-ROC', color='red')
+    plt.plot(epochs, auc_roc, label='Training AUC-ROC', marker='o', color='blue')
+    plt.plot(epochs, val_auc_roc, label='Validation AUC-ROC', marker='o', color='red')
     plt.title('Training and Validation AUC-ROC')
     plt.xlabel('Epochs')
     plt.ylabel('AUC-ROC')
@@ -133,29 +148,51 @@ def plot_additional_training_history(history, title="Model Training History", fi
 
     # Wykres lr
     plt.figure()
-    plt.plot(epochs, lr, color='blue')
+    plt.plot(epochs, lr, marker='o', color='blue')
     plt.title('Learning rate')
     plt.xlabel('Epochs')
     plt.ylabel('lr')
     plt.grid(True, linestyle='--', alpha=0.7)
-    plt.legend()
     mse_plot_path = os.path.join(folder, f'{filename_prefix}_lr.png')
     plt.savefig(mse_plot_path)  # Zapis wykresu jako plik PNG w folderze
     # plt.show()
 
     # Wykres batch_size
     plt.figure()
-    plt.plot(epochs, lr, color='blue')
+    plt.plot(epochs, batch_size, marker='o', color='blue')
     plt.title('Batch size')
     plt.xlabel('Epochs')
     plt.ylabel('Batch size')
     plt.grid(True, linestyle='--', alpha=0.7)
-    plt.legend()
     mse_plot_path = os.path.join(folder, f'{filename_prefix}_batch_size.png')
     plt.savefig(mse_plot_path)  # Zapis wykresu jako plik PNG w folderze
     # plt.show()
     print(f"All plots saved in '{folder}' folder.")
 
+
+def plot_weights_average(weights_history, layer_names, title="Model Training History", filename_prefix="", folder="plots"):
+    """
+    Rysuje średnie wartości wag dla podanych warstw jako słupki pionowe wraz z odchyleniem standardowym.
+    """
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    for name in layer_names:
+        weights = weights_history[name]  # Lista wag dla każdej epoki
+        mean_weights = [np.mean(w.flatten()) for w in weights]  # Średnia wagi po spłaszczeniu
+        std_weights = [np.std(w.flatten()) for w in weights]  # Odchylenie standardowe po spłaszczeniu
+
+        plt.figure()
+        epochs = range(1, len(weights) + 1)  # Numer epoki (1, 2, ..., n)
+        plt.bar(epochs, mean_weights, yerr=std_weights, capsize=5, alpha=0.7, color='blue')
+        plt.xlabel('Epoki')
+        plt.ylabel('Średnia wartość wag (+ odchylenie standardowe)')
+        plt.title(f'Zmiana wag w warstwie: {name}')
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plot_path = os.path.join(folder, f'{filename_prefix}_{name}_weights.png')
+        plt.savefig(plot_path)  # Zapis wykresu jako plik PNG w folderze
+
+    plt.show()
 
 def save_all_metrics(y_true, y_pred, y_pred_prob, folder="metrics", filename="all_metrics.txt"):
     # Sprawdzamy, czy folder istnieje, jeśli nie to go tworzymy

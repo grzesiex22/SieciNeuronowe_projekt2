@@ -35,7 +35,9 @@ class Model:
 
         self.model = None
         self.history = None
+        self.weights_history = None
         self.classes = ['cat', 'dog', 'wild']
+        self.layer_names = ['conv2d_1', 'output_layer']  # warstwy do śledzenia
 
     def load_data(self):
         """Wczytaj dane z folderów z użyciem ImageDataGenerator."""
@@ -85,25 +87,29 @@ class Model:
     def create_model(self):
         # Tworzymy model CNN
         self.model = tf.keras.Sequential([
-            # Warstwa konwolucyjna
-            tf.keras.layers.Conv2D(32, (3, 3), activation='relu', input_shape=(128, 128, 3)),
-            tf.keras.layers.MaxPooling2D((2, 2)),
+            # Warstwa wejściowa
+            tf.keras.layers.Input(shape=(128, 128, 3), name='input_layer'),
 
-            tf.keras.layers.Conv2D(64, (3, 3), activation='relu'),
-            tf.keras.layers.MaxPooling2D((2, 2)),
+            # Warstwa konwolucyjna 1
+            tf.keras.layers.Conv2D(32, (3, 3), activation='relu', name='conv2d_1'),
+            tf.keras.layers.MaxPooling2D((2, 2), name='maxpool_1'),
 
-            tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
-            tf.keras.layers.MaxPooling2D((2, 2)),
+            # Warstwa konwolucyjna 2
+            tf.keras.layers.Conv2D(64, (3, 3), activation='relu', name='conv2d_2'),
+            tf.keras.layers.MaxPooling2D((2, 2), name='maxpool_2'),
+
+            # Warstwa konwolucyjna 3
+            tf.keras.layers.Conv2D(128, (3, 3), activation='relu', name='conv2d_3'),
+            tf.keras.layers.MaxPooling2D((2, 2), name='maxpool_3'),
 
             # Spłaszczanie wyników
-            tf.keras.layers.Flatten(),
+            tf.keras.layers.Flatten(name='flatten'),
 
             # Warstwa w pełni połączona
-            tf.keras.layers.Dense(128, activation='relu'),
+            tf.keras.layers.Dense(128, activation='relu', name='dense_1'),
 
             # Warstwa wyjściowa
-            tf.keras.layers.Dense(len(self.train_data.class_indices), activation='softmax')
-            # Liczba klas (np. 3: dog, cat, wild)
+            tf.keras.layers.Dense(len(self.train_data.class_indices), activation='softmax', name='output_layer')
         ])
 
         # Tworzenie optymalizatora SGD z momentum
@@ -140,16 +146,6 @@ class Model:
             verbose=1  # Wyświetlanie komunikatów
         )
 
-        # # Tworzenie callbacku
-        # adaptive_batch_size_callback = AdaptiveBatchSizeCallback(
-        #     train_data=self.train_data,  # Generator danych treningowych
-        #     val_data=self.val_data,  # Generator danych walidacyjnych
-        #     initial_batch_size=32,  # Początkowy rozmiar batcha
-        #     increase_epoch=1,  # Po jakiej epoce zwiększymy batch size
-        #     increase_factor=1.2,  # O ile razy zwiększymy batch size
-        #     max_batch_size=256  # Maksymalny dozwolony rozmiar batcha
-        # )
-
         # Trenowanie modelu
         self.history = self.model.fit(
             self.train_data,  # Zestaw treningowy
@@ -172,10 +168,11 @@ class Model:
             initial_batch_size=32,
             increase_epoch=3,
             increase_factor=1.35,
-            max_batch_size=256
+            max_batch_size=256,
+            layer_names=self.layer_names
         )
 
-        self.history = trainer.train(epochs=20)
+        self.history, self.weights_history = trainer.train(epochs=epochs)
 
     def save_model_architecture(self, filename_prefix="0", folder="models"):
         # Tworzenie brakujących folderów, jeśli nie istnieją
@@ -222,3 +219,28 @@ class Model:
         else:
             with open(file_path, 'w') as f:
                 json.dump(self.history, f)
+
+    def save_weights_history_to_json(self, filename_prefix="0", folder="history"):
+        """
+        Zapisuje historię wag do pliku JSON.
+
+        :param weights_history: Słownik z historią wag. Format: {nazwa_warstwy: [wagi_epoka1, wagi_epoka2, ...]}
+        :param filename: Nazwa pliku do zapisania danych.
+        """
+        # Tworzenie brakujących folderów, jeśli nie istnieją
+        os.makedirs(folder, exist_ok=True)
+
+        # Zapisz historię do pliku JSON
+        file_path = os.path.join(folder, f'{filename_prefix}_weights_history.json')
+
+        # Przygotuj dane do zapisu w JSON
+        json_ready_weights = {}
+        for layer_name, epochs_weights in self.weights_history.items():
+            # Zamień numpy array na listy
+            json_ready_weights[layer_name] = [
+                epoch_weights.tolist() for epoch_weights in epochs_weights
+            ]
+
+        # Zapisz do pliku JSON
+        with open(file_path, "w") as f:
+            json.dump(json_ready_weights, f, indent=4)

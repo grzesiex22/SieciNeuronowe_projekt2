@@ -33,9 +33,12 @@ model.create_model()
 model.train2(epochs=40)
 
 n = get_next_prefix()
+# dane do zapisu do plików
 model.save_model_architecture(filename_prefix=n)
 model.save_model(filename_prefix=n)
 model.save_history2(filename_prefix=n)
+model.save_weights_history_to_json(filename_prefix=n)
+# wykresy
 Wykresy.plot_training_history(history=model.history, filename_prefix=n)
 Wykresy.plot_additional_training_history(history=model.history, filename_prefix=n)
-
+Wykresy.plot_weights_average(weights_history=model.weights_history, layer_names=model.layer_names)
