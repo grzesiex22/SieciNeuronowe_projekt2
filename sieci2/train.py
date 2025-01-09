@@ -41,4 +41,4 @@ model.save_weights_history_to_json(filename_prefix=n)
 # wykresy
 Wykresy.plot_training_history(history=model.history, filename_prefix=n)
 Wykresy.plot_additional_training_history(history=model.history, filename_prefix=n)
-Wykresy.plot_weights_average(weights_history=model.weights_history, layer_names=model.layer_names)
+Wykresy.plot_weights_average(weights_history=model.weights_history, layer_names=model.layer_names, filename_prefix=n)

@@ -25,6 +25,7 @@ class Trainer:
         }
         self.weight_tracker = None
         self.layer_names = layer_names
+        self.weights_history = {name: [] for name in self.layer_names}
 
         # Early stopping parameters
         self.early_stopping_patience = 3
@@ -107,18 +108,23 @@ class Trainer:
                 current_val_loss = history.history['val_loss'][-1]
                 print(f"Validation loss after epoch {current_epoch + 1}: {current_val_loss}")
 
+                for name in self.layer_names:
+                    layer = self.model.get_layer(name)
+                    weights, biases = layer.get_weights()  # Pobranie wag i biasów
+                    self.weights_history[name].append(weights.copy())  # Zapis wag
+
                 # Early stopping check
                 if current_val_loss < self.early_stopping_best_val_loss:
                     self.early_stopping_best_val_loss = current_val_loss
                     self.best_weights = self.model.get_weights()  # Zapis najlepszych wag
-                    self.best_epoch = current_epoch
+                    self.best_epoch = current_epoch+1
                     self.early_stopping_counter = 0
                 else:
                     self.early_stopping_counter += 1
                     if self.early_stopping_counter >= self.early_stopping_patience:
                         print(f"\nEarly stopping triggered. Training stopped. Best epoch: {self.best_epoch}")
                         self.model.set_weights(self.best_weights)  # Przywrócenie najlepszych wag
-                        return self.global_history
+                        return self.global_history, self.weights_history
                 print(
                     f"EarlyStopping counter: {self.early_stopping_counter}, Best val_loss: {self.early_stopping_best_val_loss}")
 
@@ -153,4 +159,4 @@ class Trainer:
                     batch_size = self.max_batch_size
 
         print("\nTraining complete.")
-        return self.global_history, self.weight_tracker.weights_history
+        return self.global_history, self.weights_history

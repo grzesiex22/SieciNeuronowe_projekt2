@@ -1,3 +1,5 @@
+import json
+
 import numpy as np
 import os
 import matplotlib.pyplot as plt
@@ -170,18 +172,25 @@ def plot_additional_training_history(history, title="Model Training History", fi
     print(f"All plots saved in '{folder}' folder.")
 
 
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+import json
+
 def plot_weights_average(weights_history, layer_names, title="Model Training History", filename_prefix="", folder="plots"):
     """
     Rysuje średnie wartości wag dla podanych warstw jako słupki pionowe wraz z odchyleniem standardowym.
+    Zapisuje również obliczone dane (średnia i odchylenie standardowe) do plików JSON.
     """
     if not os.path.exists(folder):
         os.makedirs(folder)
 
     for name in layer_names:
         weights = weights_history[name]  # Lista wag dla każdej epoki
-        mean_weights = [np.mean(w.flatten()) for w in weights]  # Średnia wagi po spłaszczeniu
-        std_weights = [np.std(w.flatten()) for w in weights]  # Odchylenie standardowe po spłaszczeniu
+        mean_weights = [float(np.mean(w.flatten())) for w in weights]  # Średnia wagi po spłaszczeniu
+        std_weights = [float(np.std(w.flatten())) for w in weights]  # Odchylenie standardowe po spłaszczeniu
 
+        # Rysowanie wykresu
         plt.figure()
         epochs = range(1, len(weights) + 1)  # Numer epoki (1, 2, ..., n)
         plt.bar(epochs, mean_weights, yerr=std_weights, capsize=5, alpha=0.7, color='blue')
@@ -192,7 +201,19 @@ def plot_weights_average(weights_history, layer_names, title="Model Training His
         plot_path = os.path.join(folder, f'{filename_prefix}_{name}_weights.png')
         plt.savefig(plot_path)  # Zapis wykresu jako plik PNG w folderze
 
+        # Zapis danych do pliku JSON
+        json_data = {
+            "epochs": list(epochs),
+            "mean_weights": mean_weights,
+            "std_weights": std_weights
+        }
+        json_file_path = os.path.join(folder, f'{filename_prefix}_{name}_weights.json')
+        with open(json_file_path, 'w') as json_file:
+            json.dump(json_data, json_file, indent=4)
+
     plt.show()
+
+
 
 def save_all_metrics(y_true, y_pred, y_pred_prob, folder="metrics", filename="all_metrics.txt"):
     # Sprawdzamy, czy folder istnieje, jeśli nie to go tworzymy
