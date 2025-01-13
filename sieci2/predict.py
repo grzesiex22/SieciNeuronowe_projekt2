@@ -38,4 +38,4 @@ def predict(model_path, img_path):
 
     print(f'The predicted class is: {class_labels[predicted_class[0]]}')
 
-predict(model_path='models/7_animal_faces_model.h5', img_path='test_images/R.jpg')
+predict(model_path='models/26_animal_faces_model.h5', img_path='test_images/gucio.jpg')

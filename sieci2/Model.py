@@ -52,7 +52,6 @@ class Model:
             horizontal_flip=True,  # Odbicie lustrzane
             fill_mode='nearest',  # Uzupełnianie
         )
-
         # Załaduj dane treningowe
         self.train_data = train_datagen.flow_from_directory(
             self.train_path,  # Ścieżka do folderu z danymi treningowymi
@@ -60,27 +59,23 @@ class Model:
             batch_size=32,
             class_mode="categorical",  # Wieloklasowa klasyfikacja
         )
-
         # Załaduj dane walidacyjne bez augmentacji
         val_datagen = ImageDataGenerator(rescale=1. / 255)  # Tylko normalizacja
-
         self.val_data = val_datagen.flow_from_directory(
-            self.val_path,  # Ścieżka do folderu z danymi treningowymi
+            self.val_path,  # Ścieżka do folderu z danymi walidacyjnymi
             target_size=(128, 128),  # Rozmiar obrazów
             batch_size=32,
             class_mode="categorical",  # Wieloklasowa klasyfikacja
         )
-
         # Załaduj dane testowe bez augmentacji
         test_datagen = ImageDataGenerator(rescale=1. / 255)  # Tylko normalizacja
-
         self.test_data = test_datagen.flow_from_directory(
             self.test_path,  # Ścieżka do folderu z danymi testowymi
             target_size=(128, 128),
             batch_size=32,
             class_mode="categorical",
         )
-        # x = self.train_data.samples
+
         print("Dane zostały wczytane.")
 
 
@@ -109,7 +104,8 @@ class Model:
             tf.keras.layers.Dense(128, activation='relu', name='dense_1'),
 
             # Warstwa wyjściowa
-            tf.keras.layers.Dense(len(self.train_data.class_indices), activation='softmax', name='output_layer')
+            tf.keras.layers.Dense(len(self.train_data.class_indices),
+                                  activation='softmax', name='output_layer')
         ])
 
         # Tworzenie optymalizatora SGD z momentum
